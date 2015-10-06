@@ -6,6 +6,7 @@ from c2corg_api.models.waypoint import Waypoint, WaypointLocale
 from c2corg_api.models.document import (
     UpdateType, DocumentGeometry, set_available_cultures)
 from c2corg_api.tests import BaseTestCase
+from c2corg_api.models.query_builder import dict_to_query
 
 
 class TestWaypoint(BaseTestCase):
@@ -258,9 +259,28 @@ class TestWaypoint(BaseTestCase):
         set_available_cultures([waypoint])
         self.assertEqual(waypoint.available_cultures, ['en', 'fr'])
 
-    def _get_waypoint(self):
+    def test_dict_to_query(self):
+        wp1 = self._get_waypoint(1)
+        wp2 = self._get_waypoint(2)
+        wp3 = self._get_waypoint(3)
+        self.session.add_all([wp1, wp2, wp3])
+        self.session.flush()
+
+        d = {
+                'outings': 'list',
+                'summits': '{0}-{1}'.format(wp1.document_id, wp2.document_id),
+                'orderby': 'document_id',
+                'order': 'desc'
+            }
+        q = dict_to_query(d, Waypoint)
+        results = q.all()
+        self.assertEqual(
+                map(lambda json: json.document_id, results),
+                [wp2.document_id, wp1.document_id])
+
+    def _get_waypoint(self, elevation=2203):
         return Waypoint(
-            waypoint_type='summit', elevation=2203,
+            waypoint_type='summit', elevation=elevation,
             locales=[
                 WaypointLocale(
                     culture='en', title='A', description='abc',

@@ -598,8 +598,15 @@ class TestWaypointRest(BaseTestRest):
             geometry=DocumentGeometry(
                 geom='SRID=3857;POINT(635956 5723604)'))
         self.session.add(self.waypoint3)
-        self.session.add(Waypoint(
+        self.waypoint4 = Waypoint(
             waypoint_type='summit', elevation=4,
             geometry=DocumentGeometry(
-                geom='SRID=3857;POINT(635956 5723604)')))
+                geom='SRID=3857;POINT(635956 5723604)'))
+        self.waypoint4.locales.append(WaypointLocale(
+            culture='en', title='Mont Granier', description='...',
+            access='yep'))
+        self.waypoint4.locales.append(WaypointLocale(
+            culture='fr', title='Mont Granier', description='...',
+            access='ouai'))
+        self.session.add(self.waypoint4)
         self.session.flush()
